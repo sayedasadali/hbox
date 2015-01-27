@@ -1,2 +1,1 @@
-# haskellbox
-cse230
+Haskell=======CSE230------
