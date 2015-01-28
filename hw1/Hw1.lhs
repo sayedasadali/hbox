@@ -126,9 +126,15 @@ The following are the definitions of shapes:
    3. Move $n - 1$ discs from peg $c$ to peg $b$.
    
    Write a function
-   
+
+> moveDisc     :: String -> String -> IO ()
+> moveDisc a b = putStrLn ("move disc from " ++ a ++ " to " ++ b)
 > hanoi :: Int -> String -> String -> String -> IO ()
-> hanoi = error "Define me!"
+> hanoi 0 a b c = putStr ("")
+> hanoi n a b c = do
+>   hanoi (n - 1) a c b
+>   moveDisc a b
+>   hanoi (n - 1) c b a
 
   that, given the number of discs $n$ and peg names $a$, $b$, and $c$,
   where a is the starting peg,
@@ -154,8 +160,44 @@ Part 2: Drawing Fractals
 Write a function `sierpinskiCarpet` that displays this figure on the
 screen:
 
+> spaceClose :: Window -> IO ()
+> spaceClose w
+>             = do k <- getKey w
+>                  if k == ' ' || k == '\x0' then closeWindow w
+>                                            else spaceClose w
+
+> fillSquare :: Window -> Int -> Int -> Int -> IO ()
+> fillSquare w x y size
+>            = drawInWindow w (withColor Cyan
+>                 (polygon [(x, y),
+>                           (x + size, y),
+>                           (x + size, y - size),
+>                           (x, y - size),
+>                           (x, y)
+>                           ]
+>                  )
+>              )
+
+> drawSierpinskiCarpet :: Window -> Int -> Int -> Int -> IO ()
+> drawSierpinskiCarpet w x y size
+>                  = if size <= 2
+>                    then fillSquare w x y size
+>                    else let size2 = size `div` 3
+>                      in do drawSierpinskiCarpet w x               y               size2
+>                            drawSierpinskiCarpet w (x + size2)     y               size2
+>                            drawSierpinskiCarpet w (x + size2 * 2) y               size2
+>                            drawSierpinskiCarpet w (x + size2 * 2) (y - size2)     size2
+>                            drawSierpinskiCarpet w (x + size2 * 2) (y - size2 * 2) size2
+>                            drawSierpinskiCarpet w (x + size2)     (y - size2 * 2) size2
+>                            drawSierpinskiCarpet w x               (y - size2 * 2) size2 
+>                            drawSierpinskiCarpet w x               (y - size2)     size2
+
 > sierpinskiCarpet :: IO ()
-> sierpinskiCarpet = error "Define me!"
+> sierpinskiCarpet = runGraphics (
+>    do w <- openWindow "Sierpinski Carpet" (400, 400)
+>       drawSierpinskiCarpet w 50 300 256 
+>       spaceClose w
+>    )
 
 Note that you either need to run your program in `SOE/src` or add this
 path to GHC's search path via `-i/path/to/SOE/src/`.
@@ -166,8 +208,33 @@ Also, the organization of SOE has changed a bit, so that now you use
    own design.  Be creative!  The only constraint is that it shows some
    pattern of recursive self-similarity.
 
+> fillTri :: Window -> Int -> Int -> Int -> IO()
+> fillTri w x y size
+>         = drawInWindow w (withColor Cyan
+>             (polygon [(x, y),
+>                       (x + size, y),
+>                       (x + size `div` 2, y - size),
+>                       (x, y)
+>                       ]
+>             )
+>           )
+
+> drawFractal w x y size
+>             = if size <= 4
+>               then fillTri w x y size
+>               else let size2 = size `div` 2
+>               in do drawFractal w x y size2
+>                     drawFractal w (x + size2) y size2
+>                     drawFractal w (x + size2 `div` 2) (y - size2) size2
+
+
 > myFractal :: IO ()
-> myFractal = error "Define me!"
+> myFractal = runGraphics (
+>    do w <- openWindow "My Fractal" (400, 400)
+>       drawFractal w 50 300 256 
+>       spaceClose w
+>    )
+
 
 Part 3: Recursion Etc.
 ----------------------
@@ -253,25 +320,44 @@ Now, a few functions for this `Tree` type.
 > data Tree a = Leaf a | Branch (Tree a) (Tree a)
 >               deriving (Show, Eq)
 
+`treeMap` is a version of `map` for Tree data type
+
+> treeMap                :: (a -> b) -> Tree a -> Tree b
+> treeMap f (Leaf x)     = Leaf (f x)
+> treeMap f (Branch l r) = Branch (treeMap f l) (treeMap f r)
+
+`treeFoldr` is a version of `foldr` for Tree data type
+
+> treeFoldr                            :: (b -> b -> b) -> (a -> b) -> Tree a -> b
+> treeFoldr _       fLeaf (Leaf x)     = fLeaf x
+> treeFoldr fBranch fLeaf (Branch l r) = fBranch (treeFoldr fBranch fLeaf l) (treeFoldr fBranch fLeaf r)
+
 `fringe t` should return a list of all the values occurring as a `Leaf`.
 So: `fringe (Branch (Leaf 1) (Leaf 2))` should return `[1,2]`
 
-> fringe              :: Tree a -> [a]
-> fringe (Leaf x)     = [x]
-> fringe (Branch l r) = (fringe l) ++ (fringe r)
+> fringe :: Tree a -> [a]
+> fringe = treeFoldr (++) (: [])
+
+-- > fringe (Leaf x)     = [x]
+-- > fringe (Branch l r) = (fringe l) ++ (fringe r)
 
 `treeSize` should return the number of leaves in the tree. 
 So: `treeSize (Branch (Leaf 1) (Leaf 2))` should return `2`.
 
-> treeSize           :: Tree a -> Int
-> treeSize (Leaf x)  = 1
-> treeSize (Branch l r) = (treeSize l) + (treeSize r)
+> treeSize :: Tree a -> Int
+> treeSize = treeFoldr (+) (\_ -> 1)
+
+-- > treeSize (Leaf x)     = 1
+-- > treeSize (Branch l r) = (treeSize l) + (treeSize r)
 
 `treeSize` should return the height of the tree.
 So: `height (Branch (Leaf 1) (Leaf 2))` should return `1`.
 
-> treeHeight :: Tree a -> Int
-> treeHeight = error "Define me!"
+-- > treeHeight :: Tree a -> Int
+-- > treeHeight = treeFoldr (1 + max) (\_ -> 0)
+
+> treeHeight (Leaf x)     = 0
+> treeHeight (Branch l r) = 1 + max (treeHeight l) (treeHeight r)
 
 Now, a tree where the values live at the nodes not the leaf.
 
@@ -294,8 +380,9 @@ should return `(IBranch 1 (IBranch 2 ILeaf ILeaf) ILeaf)`.
  
 Write the function map in terms of foldr:
 
-> myMap :: (a -> b) -> [a] -> [b]
-> myMap = error "Define me!"
+> myMap          :: (a -> b) -> [a] -> [b]
+> myMap _ []     = []
+> myMap f (x:xs) = foldr (\x xs -> (f x) : xs) [] (x:xs)
 
 Part 4: Transforming XML Documents
 ----------------------------------
@@ -388,6 +475,9 @@ in the textual data in the original XML).
 
 > formatPlay :: SimpleXML -> SimpleXML
 > formatPlay xml = PCDATA "WRITE ME!"
+
+-- > formatPlay xml
+-- >     | ()
 
 The main action that we've provided below will use your function to
 generate a ﬁle `dream.html` from the sample play. The contents of this

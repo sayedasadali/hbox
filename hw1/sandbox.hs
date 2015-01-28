@@ -35,15 +35,57 @@ minListNonRecursive (x:xs) = foldr min x xs
 data Tree a = Leaf a | Branch (Tree a) (Tree a)
                deriving (Show, Eq)
 
-fringe              :: Tree a -> [a]
--- fringe (Leaf x)     = [x]
--- fringe (Branch l r) = (fringe l) ++ (fringe r)
+-- `treeMap` is a version of `map` for Tree data type
+
+treeMap                :: (a -> b) -> Tree a -> Tree b
+treeMap f (Leaf x)     = Leaf (f x)
+treeMap f (Branch l r) = Branch (treeMap f l) (treeMap f r)
+
+-- `treeFoldr` is a version of `foldr` for Tree data type
+
+treeFoldr                            :: (b -> b -> b) -> (a -> b) -> Tree a -> b
+treeFoldr _       fLeaf (Leaf x)     =  fLeaf x
+treeFoldr fBranch fLeaf (Branch l r) = fBranch (treeFoldr fBranch fLeaf l) (treeFoldr fBranch fLeaf r)
+
+fringe :: Tree a -> [a] 
+fringe = treeFoldr (++) (: [])
 
 -- `treeSize` should return the number of leaves in the tree. 
 -- So: `treeSize (Branch (Leaf 1) (Leaf 2))` should return `2`.
 
--- > treeSize           :: Tree a -> Int
--- > treeSize (Leaf x)  = x
+treeSize           :: Tree a -> Int
+treeSize = treeFoldr (+) (\_ -> 1)
+
+-- treeHeight :: Tree a -> Int
+-- treeHeight = treeFoldr max (\_ -> 0)
+
+moveDisc :: String -> String -> IO ()
+moveDisc a b = putStrLn ("move disc from " ++ a ++ " to " ++ b)
+
+hanoi :: Int -> String -> String -> String -> IO ()
+hanoi 0 _ _ _ = putStr ("")
+hanoi n a b c = do
+    hanoi (n - 1) a c b
+    moveDisc a b
+    hanoi (n - 1) c b a
+
+myMap          :: (a -> b) -> [a] -> [b]
+myMap _ []     = []
+myMap f (x:xs) = foldr (\y ys -> (f y) : ys) [] (x:xs)
+
+-- to test myMap
+doubleList :: Num a => [a] -> [a]
+doubleList = map (*2)
+
+-- sierpinskiCarpet :: IO ()
+-- sierpinskiCarpet = runGraphics (
+--     do w <- openWindow "Sierpinski Carpet" (300, 300)
+--        drawInWindow w (text (100,200) "Hello Graphics World") 
+--        k <- getKey w
+--        closeWindow w
+--        )
+
+
 -- > 
 
 -- `treeSize` should return the height of the tree.
