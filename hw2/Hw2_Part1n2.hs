@@ -1,5 +1,5 @@
 {-# LANGUAGE TypeSynonymInstances #-}
-module Hw2_Part1 where
+module Hw2_Part1n2 where
 
 -- extra imports for unit testing
 import Test.HUnit
@@ -72,39 +72,72 @@ leftestNode :: (Ord k) => BST k v -> (k, v)
 leftestNode (Bind k v Emp _) = (k, v)
 leftestNode (Bind _ _ l   _) = leftestNode l
 
+-- End of Part 1 and 2
+-- ===================
+
 -- dummy trees for testing scenarios
+-- =================================
 -- TC : delete node with no child
 tNoChild :: Num k => BST k [Char]
 tNoChild = Bind 5 "5" 
                 (Bind 2 "2"   (Bind (-4) "-4" Emp Emp) 
-                              (Bind 3 "three" Emp Emp)
+                              (Bind 3    "3"  Emp Emp)
                 )
-                (Bind 18 "18" Emp
-                              Emp
-                )
--- result delete -4
+                (Bind 18 "18" Emp Emp)
+-- result : delete -4
 tNoChild' :: Num k => BST k [Char]
 tNoChild' = Bind 5 "5" 
                 (Bind 2 "2"   Emp
-                              (Bind 3 "three" Emp Emp)
+                              (Bind 3 "3" Emp Emp)
                 )
-                (Bind 18 "18" Emp
-                              Emp
-                )
+                (Bind 18 "18" Emp Emp)
 
-
+-- TC : delete node with 1 child
 t1Child :: Num k => BST k [Char]
 t1Child = Bind 5 "5" 
                 (Bind 2 "2"   (Bind (-4) "-4" Emp Emp) 
-                              (Bind 3 "three" Emp Emp)
+                              (Bind 3    "3"  Emp Emp)
                 )
                 (Bind 18 "18" Emp
-                              (Bind 21 "21" (Bind 19 "19" Emp Emp) 
-                                            (Bind 25 "25" Emp Emp)
+                              (Bind 21   "21" (Bind 19 "19" Emp Emp) 
+                                              (Bind 25 "25" Emp Emp)
+                              )
+                )
+-- result : delete 18 
+t1Child' :: Num k => BST k [Char]
+t1Child' = Bind 5 "5"
+                (Bind 2 "2"   (Bind (-4) "-4" Emp Emp) 
+                              (Bind 3 "3"     Emp Emp)
+                )
+                (Bind 21 "21" (Bind 19   "19" Emp Emp) 
+                              (Bind 25   "25" Emp Emp)
+                )
+
+-- TC : delete node with 2 child
+t2Child :: Num k => BST k [Char]
+t2Child = Bind 5 "5" 
+                (Bind 2 "2"   (Bind (-4) "-4" Emp Emp) 
+                              (Bind 3    "3"  Emp Emp)
+                )
+                (Bind 12 "12" (Bind 9    "9"  Emp Emp)
+                              (Bind 21   "21" (Bind 19 "19" Emp Emp) 
+                                              (Bind 25 "25" Emp Emp)
                               )
                 )
 
--- Test cases
+-- result : delete 
+t2Child' :: Num k => BST k [Char]
+t2Child' = Bind 5 "5" 
+                (Bind 2 "2"   (Bind (-4) "-4" Emp Emp) 
+                              (Bind 3    "3"  Emp Emp)
+                )
+                (Bind 19 "19" (Bind 9 "9"     Emp Emp)
+                              (Bind 21 "21"   Emp
+                                              (Bind 25 "25" Emp Emp)
+                              )
+                )
+
+-- Test cases [source](https://hackage.haskell.org/package/HUnit-1.2.2.1/docs/Test-HUnit.html)
 -- sample borrowed from:
 -- http://zvon.org/other/haskell/Outputprelude/foldr_f.html
 -- http://zvon.org/other/haskell/Outputprelude/foldl_f.html
@@ -128,5 +161,7 @@ tests = test [ "test01" ~: "div"   ~: (2.0)            ~=? (myFoldl (/) 64 [4,2,
                "test17" ~: "max"   ~: 55               ~=? (myFoldr max 18 [3,6,12,4,55,11]),
                "test18" ~: "avg"   ~: 12.0             ~=? (myFoldr (\x y -> (x+y)/2) 54 [12,4,10,6]),
                -- BST unit tests [source](http://www.algolist.net/Data_structures/Binary_search_tree/Removal)
-               "test19" ~: "tNoChildDel"  ~: tNoChild' ~=? (delete (-4) tNoChild) 
+               "test19" ~: "tNoChildDel"  ~: tNoChild' ~=? (delete (-4) tNoChild),
+               "test20" ~: "t1ChildDel"   ~: t1Child'  ~=? (delete 18   t1Child),
+               "test21" ~: "t2ChildDel"   ~: t2Child'  ~=? (delete 12   t2Child)
              ]
