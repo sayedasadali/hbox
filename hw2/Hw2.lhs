@@ -286,18 +286,17 @@ the value of the "current store" in a variable `s` use `s <- get`.
 > evalE (Val v)      = return v 
 >
 > evalE (Op o e1 e2) = do 
->
 >	IntVal val1 <- evalE(e1)
 >	IntVal val2 <- evalE(e2)
 >	case o of 		--need to define all possible operators here
->			Plus 	-> return $ IntVal $ val1 + val2   		--1
->			Minus 	-> return $ IntVal $ val1 - val2		--2
->			Times 	-> return $ IntVal $ val1 * val2		--3
->			Divide 	-> return $ IntVal $ val1 `div` val2		--4
->                       Gt     	-> return $ BoolVal $ val1 > val2		--5
->                       Ge      -> return $ BoolVal $ val1 >= val2		--6
->                       Lt      -> return $ BoolVal $ val1 < val2		--7
->                       Le      -> return $ BoolVal $ val1 <= val2		--8
+>			Plus 	-> return $ IntVal  $ val1 +     val2       --1
+>			Minus 	-> return $ IntVal  $ val1 -     val2		--2
+>			Times 	-> return $ IntVal  $ val1 *     val2		--3
+>			Divide 	-> return $ IntVal  $ val1 `div` val2		--4
+>			Gt     	-> return $ BoolVal $ val1 >     val2		--5
+>			Ge      -> return $ BoolVal $ val1 >=    val2		--6
+>			Lt      -> return $ BoolVal $ val1 <     val2		--7
+>			Le      -> return $ BoolVal $ val1 <=    val2		--8
 
 
 Statement Evaluator
