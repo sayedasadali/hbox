@@ -111,8 +111,9 @@ genBSTdel = liftM BSTdel (elements keys)
 
 genBSTop ::  Gen (BSTop Int Char)
 genBSTop  = frequency [(5, genBSTadd), (1, genBSTdel)] 
-
+-- 
 -- dummy Tree
+-- 
 dummyT :: (Ord k, Num k) => BST k [Char]
 dummyT = ofBSTops $ reverse [ BSTadd 5    "5"
                   , BSTadd 2    "2"
@@ -122,7 +123,6 @@ dummyT = ofBSTops $ reverse [ BSTadd 5    "5"
                   , BSTadd 21   "21"
                   , BSTadd 19   "19"
                   , BSTadd 25   "25" ]
-
 -- 
 -- (a) Insertion
 -- -------------
@@ -201,9 +201,9 @@ height Emp            = 0
 isBal :: BST k v -> Bool
 isBal (Bind _ _ l r) = isBal l && isBal r && abs (height l - height r) <= 2
 isBal Emp            = True
-
+-- 
 -- The following function builds a balanced BST from a list of BSTadd
-
+-- 
 buildBalBST :: [BSTop k v] -> BST k v
 buildBalBST []  = Emp
 buildBalBST kvs = Bind key val
@@ -241,9 +241,9 @@ prop_gen_isBSO = forAll genBal isBSO
 balFactor :: BST k v -> Int
 balFactor Emp            = 0
 balFactor (Bind _ _ l r) = height l - height r
-
+-- 
 -- [rotateR](http://stackoverflow.com/questions/3012064/right-rotate-of-tree-in-haskell-how-is-it-work)
-
+-- 
 rotateLeft :: BST k v -> BST k v
 rotateLeft bst
   = case bst of
@@ -253,9 +253,9 @@ rotateRight :: BST k v -> BST k v
 rotateRight bst
   = case bst of
     Bind k v (Bind k' v' l' r') r -> Bind k' v' l' (Bind k v r' r)
-    
+-- 
 -- [AVL trees](http://interactivepython.org/KKhRZ/LpOMZ/courselib/static/pythonds/Trees/balanced.html)
---def rebalance(self,node):
+-- ef rebalance(self,node):
 --  if node.balanceFactor < 0:
 --         if node.rightChild.balanceFactor > 0:
 --            self.rotateRight(node.rightChild)
@@ -268,7 +268,7 @@ rotateRight bst
 --            self.rotateRight(node)
 --         else:
 --            self.rotateRight(node)
-
+-- 
 balance :: (Ord k) => BST k v -> BST k v
 balance Emp = Emp
 balance bst@(Bind k v l r) = balSubTree (balFactor bst)
@@ -570,13 +570,12 @@ prop_Adder_Correct l1 l2 =
 -- outputs an N-bit binary number. Subtracting one from zero should
 -- yield zero.
 -- 
-
 -- signot reverses a signal
 -- using xor2 with high as not is not available in the above gates
-
+-- 
 signot :: Signal -> Signal
 signot a = xor2 (high, a)
-
+-- 
 halfsub :: (Signal, Signal) -> (Signal, Signal)
 halfsub (x,y) = (subSig, cout)
   where subSig = xor2 (x, y)
