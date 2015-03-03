@@ -26,6 +26,7 @@ Please note that this address is unmonitored; if you have any
 questions about the assignment, post to Piazza.
 
 > {-# LANGUAGE TypeSynonymInstances, FlexibleContexts, NoMonomorphismRestriction, OverlappingInstances, FlexibleInstances #-}
+> module Hw3 where
 
 > import qualified Data.Map as Map
 
@@ -46,9 +47,9 @@ Problem 0: All About You
 Tell us your name, email and student ID, by replacing the respective
 strings below
 
-> myName  = "Write Your Name  Here"
-> myEmail = "Write Your Email Here"
-> mySID   = "Write Your SID   Here"
+> myName  = "Sayed Asad Ali"
+> myEmail = "sayedasad@eng.ucsd.edu"
+> mySID   = "A53055229"
 
 Problem 1: Binary Search Trees Revisited 
 ========================================
