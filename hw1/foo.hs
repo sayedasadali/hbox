@@ -1,3 +1,4 @@
+module Foo where
 --import SOE
  
 --makeCircle (x,y) r = ellipse (x-r, y-r) (x+r, y+r)
@@ -13,6 +14,9 @@
 --  sequence_ $ map (drawInWindow w) circles
 --  k <- getKey w
 --  closeWindow w
+
+average :: [Int] -> Int
+average xs = sum xs `div` length xs
 
 bmiTell :: (RealFloat a) => a -> String  
 bmiTell bmi  
@@ -39,14 +43,14 @@ myBMITell weight height
 	| bmi <= fatty 	= "fatty"
 	| otherwise		= "pfft"
 	where
-		bmi = weight / height ^ 2
+		bmi = weight / (height * height)
 		(skinny, normal, fatty) = (18.5, 25.0, 30.0)
 
 initials :: String -> String -> String
-initials first last = [f] ++ "." ++ [l] ++ "."
+initials first last' = [f] ++ "." ++ [l] ++ "."
 	where
 		(f:_) = first
-		(l:_) = last
+		(l:_) = last'
 
 --maximum' :: (Ord a) <= a -> a
 --maximum' []  	= error "empty"
