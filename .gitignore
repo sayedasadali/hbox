@@ -2,4 +2,6 @@
 *.hi
 soln*
 lec*
-*.liquid
+.liquid
+.*.swp
+.*.swo
