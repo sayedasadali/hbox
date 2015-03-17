@@ -54,7 +54,7 @@ Problem 0: Your Clicker ID
 To get your clicker points, please fill in your clicker ID below:
 
 \begin{code}
-myClickerID = error "TBD" 
+myClickerID = "8FA14D63"
 \end{code}
 
 Problem 1: Concurrent FIFO (30pts)
