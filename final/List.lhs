@@ -189,7 +189,7 @@ Fix the specification of `zipWith` so that LH verifies:
 + The assert inside `prop_zipwith`.
 
 \begin{code}
-{-@ zipWith :: (a -> b -> c) -> xs:List a -> ListX b xs -> List c @-}
+{-@ zipWith :: (a -> b -> c) -> xs:List a -> ListX b xs -> ListX c xs @-}
 zipWith _ Emp Emp               = Emp
 zipWith f (x :+: xs) (y :+: ys) = f x y :+: zipWith f xs ys
 zipWith f _          _          = die  "Bad call to zipWith"
