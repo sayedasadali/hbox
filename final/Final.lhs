@@ -54,6 +54,9 @@ Problem 0: Your Clicker ID
 To get your clicker points, please fill in your clicker ID below:
 
 \begin{code}
+myName      = "Sayed Asad Ali"
+myEmail     = "sayedasad@eng.ucsd.edu"
+mySID       = "A53055229"
 myClickerID = "8FA14D63"
 \end{code}
 
