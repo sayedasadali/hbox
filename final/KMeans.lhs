@@ -10,6 +10,7 @@ K-Means Clustering
 module KMeans (kmeans, kmeans1, nearest, mergeCluster) where
 
 import Data.List (minimumBy)
+import Data.Function (on)
 import MapReduce
 import Assert
 import List
@@ -92,7 +93,9 @@ so that LH verifies the given type signature.
 
 \begin{code}
 {-@ nearest :: k:Nat -> n:Nat -> CenteringKN k n -> PointN n -> CenterK k @-}
-nearest k n centers p = fixme "nearest"
+nearest k n centers p = fixme "error"
+-- nearest k n centers p = minKeyList $ M.map (distance p) (M.toList centers)
+-- nearest k n centers p = minKeyMap (compare `on` distance n p)
 -- nearest k n centers p = minKeyMap $
 -- store stuff in M.Map?
 \end{code}

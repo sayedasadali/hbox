@@ -211,11 +211,16 @@ or specification (types, measures) that you need.
 
 \begin{code}
 (+++) :: List a -> List a -> List a
+{-@ (+++) :: k:List a -> l:List a -> {m:List a | size m = size k + size l} @-}
 Emp        +++ ys = ys
 (x :+: xs) +++ ys = x :+: (xs +++ ys)
-
-{-@ concat                 :: List (List a) -> List a @-}
-concat xss = foldr (+++) empty xss
+{-@ measure xss_size :: List (List a) -> Int
+            xss_size (Emp) = 0
+            xss_size ((:+:) x1 x2) = size x1 + xss_size x2 @-}
+{-@ concat         :: xss:List (List a) -> {l:List a | xss_size xss = size l} @-}
+-- concat xss = foldr (+++) empty xss -- why doesn't this typecheck?
+concat Emp         = Emp
+concat (x1 :+: x2) = x1 +++ (concat x2)
 
 prop_concat = lAssert (length (concat xss) == 6)
   where

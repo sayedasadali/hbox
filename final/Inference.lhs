@@ -4,7 +4,7 @@ Type Inference
 <div class="hidden">
 \begin{code}
 {-# LANGUAGE TypeSynonymInstances, FlexibleContexts, OverlappingInstances, FlexibleInstances #-}
-
+module Inference where
 import qualified Data.Map as Map 
 import Control.Monad.State
 import Control.Monad.Error
@@ -250,15 +250,15 @@ instance Substitutable Type where
   apply _  TBool           = TBool
   apply su t@(TVbl a)      = Map.findWithDefault t a su 
   apply su (t1 `TArr` t2)  = apply su t1 `TArr` apply su t2
-  apply su (t1 `TCom` t2)  = error "TBD"
-  apply su (TList t)       = error "TBD"
+  apply su (t1 `TCom` t2)  = apply su t1 `TCom` apply su t2
+  apply su (TList t)       = TList $ apply su t
 
   freeTvars TInt           =  Set.empty
   freeTvars TBool          =  Set.empty
   freeTvars (TVbl a)       =  Set.singleton a
   freeTvars (t1 `TArr` t2) =  freeTvars t1 `Set.union` freeTvars t2
-  freeTvars (t1 `TCom` t2) = error "TBD"
-  freeTvars (TList t)      = error "TBD"
+  freeTvars (t1 `TCom` t2) =  freeTvars t1 `Set.union` freeTvars t2
+  freeTvars (TList t)      =  freeTvars t
 
 instance Substitutable Scheme where
   apply s (Forall as t)   = Forall as $ apply s' t 
@@ -282,8 +282,11 @@ after         :: Subst -> Subst -> Subst
 su1 `after` su2 = (Map.map (apply su1) su2) `Map.union` su1
 
 
-mgu (l `TCom` r) (l' `TCom` r')  = error "TBD"
-mgu (TList t1) (TList t2)        = error "TBD"
+mgu (l `TCom` r) (l' `TCom` r')  = do s1 <- mgu l l'
+                                      s2 <- mgu (apply s1 r) (apply s1 r')
+                                      return $ s1 `after` s2
+
+mgu (TList t1) (TList t2)        = mgu t1 t2
 mgu (l `TArr` r) (l' `TArr` r')  = do  s1 <- mgu l l'
                                        s2 <- mgu (apply s1 r) (apply s1 r')
                                        return (s2 `after` s1)
@@ -343,16 +346,53 @@ ti env (ELet x e1 e2) =
         (s2, t2) <- ti (apply s1 env') e2
         return (s2 `after` s1, t2)
 
-ti env (e1 `ECom` e2) = error "TBD"
-ti env (EFst e)       = error "TBD"
-ti env (ESnd e)       = error "TBD"
+ti env (e1 `ECom` e2) =
+   do  (s1, t1) <- ti env e1
+       (s2, t2) <- ti env e2
+       return (s2 `after` s1, apply s2 t1 `TCom` t2)
 
-ti env ENil            = error "TBD"
-ti env (e1 `ECons` e2) = error "TBD"
-ti env (EIsNil e)      = error "TBD"
-ti env (EDcons e)      = error "TDB"
+ti env (EFst e)       = 
+   do  tv1      <- freshTVbl "a"
+       tv2      <- freshTVbl "b"
+       (s1, t1) <- ti env e
+       s2       <- mgu t1 $ tv1 `TCom` tv2
+       return (s2 `after` s1, apply s2 tv1)
 
-ti env (ERec x e1 e2)  = error "TBD"
+ti env (ESnd e)       =
+   do  tv1      <- freshTVbl "a"
+       tv2      <- freshTVbl "b"
+       (s1, t1) <- ti env e
+       s2       <- mgu t1 $ tv1 `TCom` tv2
+       return (s2 `after` s1, apply s2 tv2)
+
+ti env ENil            =
+  do  tv <- freshTVbl "a"
+      return (empSubst, TList tv)
+
+ti env (e1 `ECons` e2) =
+  do  (s1, t1) <- ti env e1
+      (s2, t2) <- ti (apply s1 env) e2
+      s3       <- mgu (TList (apply s2 t1)) t2
+      return (s3 `after` s2 `after` s1, apply s3 t2)
+
+ti env (EIsNil e)      =
+  do  tv       <- freshTVbl "a"
+      (s1, t1) <- ti env e
+      s2       <- mgu t1 (TList tv)
+      return (s2 `after` s1, TBool)
+
+ti env (EDcons e)      =
+  do  tv       <- freshTVbl "a"
+      (s1, t1) <- ti env e
+      s2       <- mgu t1 (TList tv)
+      return (s2 `after` s1, apply s2 tv `TCom` apply s2 t1)
+
+ti env (ERec x e1 e2)  =
+  do  tv <- freshTVbl "a"
+      let env1 = env \\ (x, Forall [] tv)
+      (s1, t1) <- ti env e1
+      (s2, t2) <- ti (apply s1 env1) e2
+      return (s2 `after` s1, t2)
 
 ti_top env e =
     do  (s, t) <- ti env e
